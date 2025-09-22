@@ -1,7 +1,9 @@
 import json
 import os
-from flask import Flask, jsonify, request, url_for
+from flask import Flask, jsonify, request, url_for, render_template
 from flask_cors import CORS
+
+
 import post_storage
 from backend.post_storage import fetch_post_by_id
 
@@ -41,10 +43,41 @@ def delete_post(post_id):
     if post_storage.delete_post(post_id):
         return jsonify({"message": f"Post with id {post_id} has been deleted successfully."})
     else:
-        return jsonify({"error": f"Post with id {post_id} not found."})
+        return jsonify({"error": f"Post with id {post_id} not found."}), 404
 
 
+@app.route("/api/posts/<int:post_id>", methods=["PUT"])
+def update_post(post_id):
+    updated_post = request.get_json()
 
+    if not updated_post:
+        return jsonify({"error": "Invalid or missing JSON data"}), 400
+
+    title = updated_post.get("title")
+    content = updated_post.get("content")
+
+    post_storage.update_post(title, content, post_id)
+    if not post_storage.fetch_post_by_id(post_id):
+        return jsonify( {"error": f"Post with ID {post_id} not found"})
+
+    posts = post_storage.get_posts()
+    return jsonify(posts)
+
+
+# Error Handling
+@app.errorhandler(400)
+def error_400():
+    pass
+
+@app.errorhandler(404)
+def error_404():
+    pass
+
+@app.errorhandler(500)
+def error_400():
+    pass
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5002, debug=True)
+
+

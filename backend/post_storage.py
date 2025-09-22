@@ -11,12 +11,14 @@ def load_file(file_path):
     with open(file_path, "r") as handel:
         try:
             posts = json.load(handel)
-            print("file loaded: ")
+            if not isinstance(posts, list):
+                print("Data have to be a list of dictionaries")
             return posts
-        except Exception as e:
+        except TypeError as e:
             print(f"Error: {e}")
+        except json.JSONDecodeError:
+            print(f"Error: Can not decode {file_path}")
             return []
-
 
 def get_posts():
     """loads jason and returns list of dicts of the posts"""
@@ -69,7 +71,9 @@ def update_post(title, content, post_id):
         if post["id"] == post_id:
             post["title"] = title
             post["content"] = content
+
     write_file(posts)
+
 
 
 def write_file(file):
