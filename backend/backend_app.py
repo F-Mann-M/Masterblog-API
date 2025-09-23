@@ -2,10 +2,8 @@ import json
 import os
 from flask import Flask, jsonify, request, url_for, render_template
 from flask_cors import CORS
-
-
 import post_storage
-from backend.post_storage import fetch_post_by_id
+
 
 app = Flask(__name__)
 CORS(app)  # This will enable CORS for all routes
@@ -25,7 +23,9 @@ def get_posts():
         return jsonify({ "error" : "database not found."}), 404
 
     # sort posts
-    if direction == "asc":
+    if not direction or not sort:
+        return jsonify(posts)
+    elif direction == "asc":
         is_reverse = False
     elif direction == "desc":
         is_reverse = True
