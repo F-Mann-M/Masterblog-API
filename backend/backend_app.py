@@ -14,10 +14,30 @@ CORS(app)  # This will enable CORS for all routes
 @app.route('/api/posts', methods=['GET'])
 def get_posts():
     """ Gets all posts form json and returns as json object"""
+
+    # check if posts should be sorted
+    sort = request.args.get("sort")
+    direction = request.args.get("direction")
+
+    # get post data
     posts = post_storage.get_posts()
     if not posts:
-        return jsonify({ "error" : "database not found."})
-    return jsonify(posts)
+        return jsonify({ "error" : "database not found."}), 404
+
+    # sort posts
+    if direction == "asc":
+        is_reverse = False
+    elif direction == "desc":
+        is_reverse = True
+    else:
+        return jsonify({"error" : f"The sorting direction '{direction}' unknown."}), 400
+
+    if sort == "title" or sort == "content":
+        posts_sorted = sorted(posts, key=lambda post: post[sort], reverse=is_reverse)
+    else:
+        return jsonify({"error": f"Invalid input. Search category '{sort}' unknown."}), 400
+
+    return jsonify(posts_sorted)
 
 
 @app.route("/api/posts", methods=["POST"])
